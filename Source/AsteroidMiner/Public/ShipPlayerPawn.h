@@ -3,24 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "InputAction.h"
-#include "InputActionValue.h"
-#include "ShipController.generated.h"
+#include "GameFramework/Pawn.h"
+#include <EnhancedInputLibrary.h>
+#include "ShipPlayerPawn.generated.h"
 
 UCLASS()
-class ASTEROIDMINER_API AShipController : public APawn
+class ASTEROIDMINER_API AShipPlayerPawn : public APawn
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	AShipController();
+	// Sets default values for this pawn's properties
+	AShipPlayerPawn();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 	UPROPERTY(EditAnywhere)
 		class USphereComponent* Sphere;
 
@@ -35,15 +31,16 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		class UCameraComponent* CameraComp;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		UInputAction* InputForward;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class UFLoatingPawnMovement* Movement;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		float MoveScale;
 
 	void MoveForward(const FInputActionValue& Value);
 
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+public:	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 };
