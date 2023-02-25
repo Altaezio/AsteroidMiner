@@ -15,11 +15,15 @@ class ASTEROIDMINER_API AShipPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 public:
-	virtual void SetUpInputComponent() override;
+	UPROPERTY(EditAnywhere)
+		class UInputMappingContext* InputMapping;
 
-	UPROPERTY()
-		class UInputMappingContext* PawnMappingContext;
-
-	UPROPERTY()
-		class UInputAction* InputForward;
+	UPROPERTY(EditAnywhere)
+		class UInputAction* InputMining;
+	UPROPERTY(EditAnywhere)
+		class UInputAction* InputModifySpeed;
+	UPROPERTY(EditAnywhere)
+		class UInputAction* InputOrientHead;
+	UPROPERTY(EditAnywhere)
+		class UInputAction* InputRotation;
 };

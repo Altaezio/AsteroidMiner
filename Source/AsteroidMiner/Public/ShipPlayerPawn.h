@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/FloatingPawnMovement.h"
 #include <EnhancedInputLibrary.h>
 #include "ShipPlayerPawn.generated.h"
 
@@ -23,24 +24,31 @@ protected:
 	UPROPERTY(EditAnywhere)
 		class UStaticMeshComponent* Body;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		class UInputMappingContext* InputMapping;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere)
 		class USpringArmComponent* SpringArmComp;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere)
 		class UCameraComponent* CameraComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-		class UFLoatingPawnMovement* Movement;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UFloatingPawnMovement* Movement;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float MoveScale;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float MoveSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float ModificationRate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float RotationScale;
 
-	void MoveForward(const FInputActionValue& Value);
+	void StartMining(const FInputActionValue& Value);
+	void ModifySpeed(const FInputActionValue& Value);
+	void OrientHead(const FInputActionValue& Value);
+	void Rotate(const FInputActionValue& Value);
 
-public:	
+public:
+	virtual void Tick(float DeltaTime) override;
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 };

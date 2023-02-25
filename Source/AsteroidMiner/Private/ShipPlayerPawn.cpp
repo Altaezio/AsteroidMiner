@@ -9,10 +9,13 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include <EnhancedInputComponent.h>
+#include <ShipPlayerController.h>
 
 // Sets default values
 AShipPlayerPawn::AShipPlayerPawn()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	SetRootComponent(Sphere);
 
@@ -24,32 +27,73 @@ AShipPlayerPawn::AShipPlayerPawn()
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
+
+	Movement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("Movement"));
 }
 
 // Called to bind functionality to input
 void AShipPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	// Get the player controller
-	AController* Controller = GetController();
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	UEnhancedInputComponent* PEI = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+	AShipPlayerController* SPC = Cast<AShipPlayerController>(Controller);
 
-	PEI->BindAction(InputForward, ETriggerEvent::Triggered, this, &AShipPlayerPawn::MoveForward);
+	// Get the local player subsystem
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(SPC->GetLocalPlayer());
+	// Clear out existing mapping, and add our mapping
+	Subsystem->ClearAllMappings();
+	Subsystem->AddMappingContext(SPC->InputMapping, 0);
+
+
+	PEI->BindAction(SPC->InputMining, ETriggerEvent::Triggered, this, &AShipPlayerPawn::StartMining);
+	PEI->BindAction(SPC->InputModifySpeed, ETriggerEvent::Triggered, this, &AShipPlayerPawn::ModifySpeed);
+	PEI->BindAction(SPC->InputOrientHead, ETriggerEvent::Triggered, this, &AShipPlayerPawn::OrientHead);
+	PEI->BindAction(SPC->InputRotation, ETriggerEvent::Triggered, this, &AShipPlayerPawn::Rotate);
 }
 
-void AShipPlayerPawn::MoveForward(const FInputActionValue& Value)
+void AShipPlayerPawn::Tick(float DeltaTime)
 {
+	Super::Tick(DeltaTime);
+	AddActorLocalOffset(MoveSpeed * FVector::ForwardVector);
+}
+
+void AShipPlayerPawn::StartMining(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Hello, start to mine please"));
+}
+
+void AShipPlayerPawn::ModifySpeed(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Modify your speed !!"));
 	if (Controller == nullptr) return;
 
-	const FVector2D MoveValue = Value.Get<FVector2D>();
+	const float MoveValue = Value.Get<float>();
 
-	if (MoveValue.Y == 0.f) return;
+	MoveSpeed += MoveValue * ModificationRate;
 
-	// Find out which way is forward
-	const FRotator Rotation(0, Controller->GetControlRotation().Yaw, 0);
-
-	// Get forward vector
-	const FVector Direction = Rotation.RotateVector(FVector::ForwardVector);
-	AddMovementInput(Direction, MoveValue.Y);
+	if (MoveSpeed < 0.f) MoveSpeed = 0.f;
 }
 
+void AShipPlayerPawn::OrientHead(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Where are you looking at ??"));
+	if (Controller == nullptr) return;
+
+	FRotator Input(Value[1], Value[0], Value[2]);
+	Input *= GetWorld()->GetDeltaSeconds() * RotationScale;
+	AddActorLocalRotation(Input);
+}
+
+void AShipPlayerPawn::Rotate(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Aww so cute when he turns his head"));
+	if (Controller == nullptr) return;
+
+	const float LookValue = Value.Get<float>();
+
+	if (LookValue != 0.f)
+	{
+		AddActorLocalRotation(FRotator(0, 0, LookValue * GetWorld()->GetDeltaSeconds() * RotationScale));
+	}
+}
